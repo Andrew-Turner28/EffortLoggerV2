@@ -1,4 +1,5 @@
 /*
+Abdalla
 This is the front end button for the logic
 its very basic - update a user's role if they are not admin
 
