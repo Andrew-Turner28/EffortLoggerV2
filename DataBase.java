@@ -1,4 +1,4 @@
-package application;
+
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ public class DataBase {
 //declare all the variables needed to parse the file
 // and store into a hashMap
 private File fileReader;
-private HashMap<String, Profile> storedInfo;
+public HashMap<String, Profile> storedInfo;
 private String fileName = "LoginCredentials";
 private String firstName;
 private String employeeIdentification;
@@ -58,7 +58,7 @@ public void accessprofile() {
     }
 }
 	
-private class Profile{
+public class Profile{
 	private String firstName;
 	private String employeeIdentification;
 	private String password;
@@ -82,6 +82,17 @@ private class Profile{
 	public String UName() {
 		return userName;
 	}
+	
+	//this function was created by abdalla
+	public String getRole() {
+		return this.role;
+	}
+	
+	//this function was created by abdalla
+	public void setRole(String newRole) {
+		this.role = newRole;
+	}
+	
     //string to display the map profile values
 	public String displayContents(){
 		String display ="Firstname: " + firstName +" Lastname: "+ lastName + "\n"
