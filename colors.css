@@ -1,0 +1,14 @@
+/* colors.css */
+.label-timer-running {
+    -fx-background-color: green;
+    -fx-text-fill: white;
+    -fx-padding: 10px;
+    -fx-font-weight: bold;
+}
+
+.label-timer-stopped {
+    -fx-background-color: red;
+    -fx-text-fill: white;
+    -fx-padding: 10px;
+    -fx-font-weight: bold;
+}
