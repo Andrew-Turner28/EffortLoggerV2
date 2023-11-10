@@ -6,7 +6,7 @@ its very basic - update a user's role if they are not admin
 This changes the file directly.
 
 */
-package application;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
