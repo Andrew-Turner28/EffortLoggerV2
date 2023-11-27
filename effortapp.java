@@ -1,7 +1,7 @@
 package application;
 
 import javafx.application.Application;
-
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -14,10 +14,17 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.geometry.Pos;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
@@ -25,7 +32,15 @@ import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Animation;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class effortapp extends Application {
@@ -46,6 +61,12 @@ public class effortapp extends Application {
     private ComboBox<String> lifeCycleStepDropdown;
     private ComboBox<String> effortCategoryDropdown;
     private ComboBox<String> deliverableDropdown;
+    
+    
+    //ADDED BY SULEIMAN
+    private Button clearLogsButton;
+    String currentSortChoice = "default";
+    String LOG_FILE_PATH = "log.txt";
 
     @Override
 
