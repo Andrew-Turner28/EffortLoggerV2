@@ -25,6 +25,13 @@ import java.time.format.DateTimeFormatter;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Animation;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.net.URL;
 
@@ -53,37 +60,41 @@ public class effortapp extends Application {
     private Button deleteDefect;
     private ComboBox<String> projectListDropdown;
 
+    private String logFileName = "log.txt";
     @Override
     public void start(Stage primaryStage) {
-        logEntries = new ArrayList<>();
-        TabPane tabPane = new TabPane();
-        initializeTheComponents();
-        totalBusinessTime = new ArrayList<>();
-        totalDevelopmentalTime = new ArrayList<>();
+    	 logEntries = new ArrayList<>();
+    	    TabPane tabPane = new TabPane();
+    	    initializeTheComponents();
+    	    totalBusinessTime = new ArrayList<>();
+    	    totalDevelopmentalTime = new ArrayList<>();
 
-        Tab effortLoggerTab = new Tab("EffortConsole", createEffortLoggerContent());
-        effortLoggerTab.setClosable(false);
+    	    Tab effortLoggerTab = new Tab("EffortConsole", createEffortLoggerContent());
+    	    effortLoggerTab.setClosable(false);
 
-        Tab logDisplayTab = new Tab("Logs", createLogDisplayContent());
-        logDisplayTab.setClosable(false);
+    	    Tab logDisplayTab = new Tab("Logs", createLogDisplayContent());
+    	    logDisplayTab.setClosable(false);
 
-        // Add the new "DefectConsole" tab
-        Tab defectConsoleTab = new Tab("DefectConsole", createDefectConsoleContent());
-        defectConsoleTab.setClosable(false);
+    	    // Add the new "DefectConsole" tab
+    	    Tab defectConsoleTab = new Tab("DefectConsole", createDefectConsoleContent());
+    	    defectConsoleTab.setClosable(false);
 
-        tabPane.getTabs().addAll(effortLoggerTab, logDisplayTab, defectConsoleTab);
+    	    tabPane.getTabs().addAll(effortLoggerTab, logDisplayTab, defectConsoleTab);
 
-        Scene scene = new Scene(tabPane, 800, 600);
-        scene.getStylesheets().add(getClass().getResource("colors.css").toExternalForm());
+    	    Scene scene = new Scene(tabPane, 800, 600);
+    	    scene.getStylesheets().add(getClass().getResource("colors.css").toExternalForm());
 
-        URL theStyleCssURL = getClass().getResource("/colors.css");
-        if (theStyleCssURL != null) {
-            scene.getStylesheets().add(theStyleCssURL.toExternalForm());
-        }
+    	    // Load existing log entries from the file when the application starts
+    	    loadLogEntriesFromFile();
 
-        primaryStage.setTitle("Effort Logger App");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    	    URL theStyleCssURL = getClass().getResource("/colors.css");
+    	    if (theStyleCssURL != null) {
+    	        scene.getStylesheets().add(theStyleCssURL.toExternalForm());
+    	    }
+
+    	    primaryStage.setTitle("Effort Logger App");
+    	    primaryStage.setScene(scene);
+    	    primaryStage.show();
     }
 
     private void initializeTheComponents() {
@@ -225,7 +236,28 @@ public class effortapp extends Application {
         logEntries.add(logEntry);
         logDisplay.appendText(logEntry + "\n");
         projectListDropdown.getItems().addAll(logEntry);
+
+        // Save the log entry to the log file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, true))) {
+            writer.write(logEntry + "\n");
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
+        }
     }
+    
+    private void loadLogEntriesFromFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(logFileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                logEntries.add(line);
+                logDisplay.appendText(line + "\n");
+                projectListDropdown.getItems().addAll(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
+        }
+    }
+
 
     private BorderPane createEffortLoggerContent() {
         GridPane grid = new GridPane();
@@ -304,6 +336,14 @@ public class effortapp extends Application {
                 }
             }
         }
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName))) {
+            for (String entry : logEntries) {
+                writer.write(entry + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
+        }
     }
     
     private void updateProjectListDropdown() {
@@ -335,6 +375,14 @@ public class effortapp extends Application {
                     break;
                 }
             }
+        }
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName))) {
+            for (String entry : logEntries) {
+                writer.write(entry + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
         }
     }
 
