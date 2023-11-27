@@ -60,6 +60,17 @@ public class effortapp extends Application {
         Tab logDisplayTab = new Tab("Logs", createLogDisplayContent());
         logDisplayTab.setClosable(false);
 
+	//ADDED BY SULEIMAN 
+        loadLogEntries();
+        EffortEditorConsole effortLogEditor = new  EffortEditorConsole();
+        Tab effortLogEditorTab = new Tab("Effort Log Editor", effortLogEditor.createEffortLogEditorContent());
+        effortLogEditorTab.setClosable(false);
+        tabPane.getTabs().add(effortLogEditorTab);
+        redoLog();
+
+
+	    
+
         tabPane.getTabs().addAll(effortLoggerTab, logDisplayTab);
 
         Scene scene = new Scene(tabPane, 800, 600);
@@ -79,6 +90,12 @@ public class effortapp extends Application {
         primaryStage.show();
     }
 
+     public static Pane createEffortLogEditorContent() {
+        GridPane gridPane = new GridPane();
+        EffortEditorConsole.inputEffort();
+        return gridPane;
+    }
+    
     
     
     
@@ -217,24 +234,171 @@ public class effortapp extends Application {
    }
    
    private BorderPane createLogDisplayContent() {
+	    logDisplay = new TextArea();
+	    logDisplay.setEditable(false); // This makes sure the text area is non-editable
+	    logDisplay.setWrapText(true);  // This ensures lines are wrapped in the TextArea
+	    logDisplay.setPromptText("Log entries will be displayed here...");
+	  
+	    Label logDisplayLabel = new Label("Log Information");
+	    logDisplayLabel.setFont(new Font("Arial", 16)); // Set font and size for the label
+	    logDisplayLabel.setPadding(new Insets(5)); // Add some padding to the label for aesthetics
+	  
+	    // Initialize the clearLogsButton here
+	    clearLogsButton = new Button("Clear Logs");
+	    clearLogsButton.setOnAction(event -> clearLogs());
+	  
+	    //this will have the dropdown selections for the sort method
+	    ComboBox<String> dropdown = new ComboBox<>();
+	    //it can be in default, ascending, or descending
+	    dropdown.getItems().addAll("Default", "Ascending", "Descending");
+	    dropdown.setValue("Default");
+	    //create a string to choose any of the options provided
 	   
-       logDisplay = new TextArea();
-       logDisplay.setEditable(false); // This makes sure the text area is non-editable
-       logDisplay.setWrapText(true);  // This ensures lines are wrapped in the TextArea
-       logDisplay.setPromptText("Log entries will be displayed here...");
-       Label logDisplayLabel = new Label("Log Information");
-       logDisplayLabel.setFont(new Font("Arial", 16)); // Set font and size for the label
-       logDisplayLabel.setPadding(new Insets(5)); // Add some padding to the label for aesthetics
-       BorderPane logDisplayContent = new BorderPane();
-       logDisplayContent.setPadding(new Insets(10)); // Add some padding for aesthetics
-       logDisplayContent.setTop(logDisplayLabel); // Set the label at the top of the BorderPane
-       logDisplayContent.setCenter(logDisplay);
-       
-       BorderPane.setAlignment(logDisplayLabel, Pos.CENTER);
-       return logDisplayContent;
-       
-   }
+	   
+	   
+	    dropdown.setOnAction(event -> {
+	    	String sortchoice = dropdown.getValue();
+	    	//based on the choices of the user
+	       if ("Descending".equals(sortchoice)) {
+	    	   sortway(false);
+	       }else if("Ascending".equals(sortchoice)) {
+	    	   sortway(true);
+	       }else {
+	    	   defaultorder();
+	       }
+	      
+	    });
+		   
+	    HBox sortControls = new HBox(5, dropdown, clearLogsButton);
+	    sortControls.setAlignment(Pos.CENTER_RIGHT);
+	    HBox topLayout = new HBox(5, logDisplayLabel, sortControls);
+	    topLayout.setAlignment(Pos.CENTER_LEFT);
+	    HBox.setHgrow(sortControls, Priority.ALWAYS);
+	    BorderPane logDisplayContent = new BorderPane();
+	    logDisplayContent.setTop(topLayout);
+	    logDisplayContent.setCenter(logDisplay);
+	   
+	   
+	   
+	    return logDisplayContent;
+	}
+	 //ADDED BY SULEIMAN
+   private void loadLogEntries() {
+		  //check for the file
+	     File logFile = new File(LOG_FILE_PATH);
+	     //if the file exists, parse it and print it out
+	     if (logFile.exists()) {
+	         try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
+	             String line;
+	             while ((line = reader.readLine()) != null) {
+	                 logEntries.add(line);
+	                 logDisplay.appendText(line + "\n");
+	             }
+	         } catch (IOException e) {
+	             e.printStackTrace();
+	         }
+	     }
+	 }
+   private List<String> getLogEntries() {
+	    try {
+	        return Files.readAllLines(Paths.get(LOG_FILE_PATH));
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        return new ArrayList<>(); // if there is an exception it will return an empty list
+	    }
+	}
+//this right here will sort it
+	private void sortway(boolean ascending) {
+		 currentSortChoice = ascending ? "Ascending" : "Descending";
+	    List<String> logs = getLogEntries(); // Get the unsorted log entries
+	    Comparator<String> comparator = (entry1, entry2) -> {
+	       //this will compare the durations in real time and if it is ascending it will print the smallest duration first
+	        String dur1 = entry1.substring(entry1.lastIndexOf(", Duration: ") + ", Duration: ".length());
+	        String dur2 = entry2.substring(entry2.lastIndexOf(", Duration: ") + ", Duration: ".length());
+	        return ascending ? dur1.compareTo(dur2) : dur2.compareTo(dur1);
+	    };
+	   
+	    List<String> sorted = logs.stream().sorted(comparator).collect(Collectors.toList());
+	    //updating the sorts
+	    logDisplay.clear();
+	    sorted.forEach(log -> logDisplay.appendText(log + "\n"));
+	}
+	
+	private void defaultorder() {
+	currentSortChoice = "Default";
+	//clear the log formatting
+	logDisplay.clear();
+	//display how they were originally inserted
+	for (String logz : logEntries) {
+		logDisplay.appendText(logz + "\n");
+	}
+	
+	}
+	private void saveLogEntry(String logEntry) {
+    try (PrintWriter out = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
+        out.println(logEntry);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+	}
 
+	private void clearLogs() {
+    logEntries.clear(); // Clear the in-memory log list
+    logDisplay.clear(); // Clear the TextArea
+ 
+    clearLogFile(); // Clear the logs.txt file
+	}
+// This method clears the logs.txt file
+	private void clearLogFile() {
+    try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_PATH))) {
+        writer.print(""); // Clears the content of the file
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+	}
+	private void redoLog() {
+	    Timer timer = new Timer(true); //give the timer and set the boolean to true
+	    timer.scheduleAtFixedRate(new TimerTask() {
+	        @Override
+	        public void run() {
+	        	//constantly run the refresh that uses permanently refresh through runLater on platform
+	        	 permanentlyRefresh();
+	        }
+	    }, 0, 2000); //this will
+	}
+
+	public static void staticreload() {
+	  //call the runlater platform to go throguh the permanently refresh method
+	    Platform.runLater(() -> {
+	       
+	        new effortapp(). permanentlyRefresh();
+	    });
+	}
+	//permanently refresh using run later
+	private void permanentlyRefresh() {
+	  Platform.runLater(() -> {
+		  //constarnly clear the display and the log entries
+	        logEntries.clear();
+	        logDisplay.clear();
+	        //call a new list of streings to get the log entries and upload as files
+	        List<String>logfiles= getLogEntries();
+	        logEntries.addAll (logfiles);
+	        // using the switch case
+	        //make them either ascending or descending or default
+	        switch (currentSortChoice) {
+	            case "Descending":
+	                sortway(true);
+	                break;
+	            case "Ascending":
+	                sortway(true);
+	                break;
+	            default:
+	            	//call the default method
+	                defaultorder();
+	                break;
+	        }
+	    });
+	}
    public static void main(String[] args) {
        launch(args);
    }
