@@ -81,6 +81,10 @@ public class effortapp extends Application {
         Tab logDisplayTab = new Tab("Logs", createLogDisplayContent());
         logDisplayTab.setClosable(false);
 
+
+
+
+	    
 	//ADDED BY SULEIMAN 
         loadLogEntries();
         EffortEditorConsole effortLogEditor = new  EffortEditorConsole();
@@ -92,6 +96,8 @@ public class effortapp extends Application {
 
 	    
 
+
+	    
         tabPane.getTabs().addAll(effortLoggerTab, logDisplayTab);
 
         Scene scene = new Scene(tabPane, 800, 600);
@@ -111,13 +117,7 @@ public class effortapp extends Application {
         primaryStage.show();
     }
 
-     public static Pane createEffortLogEditorContent() {
-        GridPane gridPane = new GridPane();
-        EffortEditorConsole.inputEffort();
-        return gridPane;
-    }
-    
-    
+
     
     
 
@@ -253,6 +253,11 @@ public class effortapp extends Application {
        
        return effortLoggerContent;
    }
+
+
+
+
+//EDITED BY SULEIMAN
    
    private BorderPane createLogDisplayContent() {
 	    logDisplay = new TextArea();
@@ -320,6 +325,15 @@ public class effortapp extends Application {
 	         }
 	     }
 	 }
+
+	
+     public static Pane createEffortLogEditorContent() {
+        GridPane gridPane = new GridPane();
+        EffortEditorConsole.inputEffort();
+        return gridPane;
+    }
+    
+    
    private List<String> getLogEntries() {
 	    try {
 	        return Files.readAllLines(Paths.get(LOG_FILE_PATH));
