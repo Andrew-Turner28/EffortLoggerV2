@@ -503,80 +503,85 @@ public class effortapp extends Application {
 	  
 	  return newLogDisplayContent;
   }
-  private void updateLogDisplay(String sortChoice, VBox logEntriesContainer) {
+ private void updateLogDisplay(String sortChoice, VBox logEntriesContainer) {
+	  //use the switchchoice and make it either descending or ascending 
 	    switch (sortChoice) {
 	        case "Descending":
+	        	//call the sortway to be true or false
 	            sortway(false, logEntriesContainer);
 	            break;
 	        case "Ascending":
 	            sortway(true, logEntriesContainer);
 	            break;
 	        default:
-	        	
+	        	//default order will use the logentriescontainer 
 	            defaultorder(logEntriesContainer);
 	            break;
 	    }
   }
   private void defaultorder(VBox logEntriesContainer) {
+	  //if it is the currentsortchoice
 	    currentSortChoice = "Default";
+	    //if it is not null 
 	    if (logEntriesContainer != null) {
+	    	//it will clear up 
 	    	logEntriesContainer.getChildren().clear();
-		    loadLogEntires(logEntriesContainer, LOG_FILE_PATH);
-	    /*
-		    for (String log : logEntries) {
-	        logEntriesContainer.getChildren().add(new LogEntryFormated(log));
-	    }
-	    */
+	    	//it loads the log entries
+		    loadLogEntires(logEntriesContainer,LOG_FILE_PATH);
 	    }
 	}
 
 	private void sortway(boolean ascending, VBox logEntriesContainer) {
+		//this will sort it if it is ascending or descending
 	    currentSortChoice = ascending ? "Ascending" : "Descending";
+	    //call the sorted 
 	    List<String> sorted = getLogEntries().stream()
-	        .sorted(getComparator(ascending))
+	        .sorted(getresult(ascending))
 	        .collect(Collectors.toList());
-
+	    //this vbox logentriescontainer
 	    logEntriesContainer.getChildren().clear();
+	    //this sorts the log for each and adds it 
 	    sorted.forEach(log -> logEntriesContainer.getChildren().add(new LogEntryFormated(log)));
 	}
-	private Comparator<String> getComparator(boolean ascending) {
-	    return (entry1, entry2) -> {
-	        String dur1 = entry1.substring(entry1.lastIndexOf(", Duration: ") + ", Duration: ".length());
-	        String dur2 = entry2.substring(entry2.lastIndexOf(", Duration: ") + ", Duration: ".length());
-	        return ascending ? dur1.compareTo(dur2) : dur2.compareTo(dur1);
+	//comparator will check the result of the ascending
+	private Comparator<String> getresult(boolean ascending) {
+		// it will get the result of the first and second string
+	    return(one,two) -> {
+	        String first = one.substring(one.lastIndexOf(", Duration: ") + ", Duration: ".length());
+	        String second = two.substring(two.lastIndexOf(", Duration: ") + ", Duration: ".length());
+	        //return the ascending 
+	        return ascending ? first.compareTo(second) : second.compareTo(first);
 	    };
 	}
-
-	
-	
-	
+  // getlogentries as a list  
   private List<String> getLogEntries() {
+	  //try to read all the files 
 	    try {
+	    	//return it then rank
 	        return Files.readAllLines(Paths.get(LOG_FILE_PATH));
+	        //catch the io exception
 	    } catch (IOException e) {
-	        e.printStackTrace();
-	        return new ArrayList<>(); // if there is an exception it will return an empty list
+	        e.printStackTrace(); // printstacktrace 
+	        return new ArrayList<>(); // if there is an arraylist it will return 
 	    }
 	}
-  
-
-
 	private void clearLogFile1() {
 	    try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_PATH))) {
 	        writer.print(""); // Clears the content of the file
 	    } catch (IOException e) {
-	        e.printStackTrace();
+	        e.printStackTrace(); //    printstacktrace 
 	    }
-		}
+	}
+		//redolog by givign the boolean as true
 		private void redoLog1() {
-		    Timer timer = new Timer(true); //give the timer and set the boolean to true
+		    Timer timer = new Timer(true); 
 		    timer.scheduleAtFixedRate(new TimerTask() {
 		        @Override
 		        public void run() {
 		        	//constantly run the refresh that uses permanently refresh through runLater on platform
 		        	 permanentlyRefresh();
 		        }
-		    }, 0, 2000); //this will
+		    }, 0, 2000); 
 		}
 
 		public static void staticreload1() {
@@ -609,9 +614,6 @@ public class effortapp extends Application {
 	        }
 	    }
 	}
-  
-  
-  
   private BorderPane createLogSearchDisplayContent() {
 	  //Sets up BorderPane for display
 	  	BorderPane logSearchDisplayContent = new BorderPane();
