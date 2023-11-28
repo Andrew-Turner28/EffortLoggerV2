@@ -375,12 +375,13 @@ public class effortapp extends Application {
                       }
                   }
                   break;
+		      
               }
           }
       }
       
       
-      
+      EffortEditorConsole.refreshEffortLogsComboBox();
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
           for (String entry : logEntries) {
               writer.write(entry + "\n");
