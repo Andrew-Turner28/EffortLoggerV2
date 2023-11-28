@@ -1,6 +1,8 @@
 //import the package and pretty much all the items involved in the code 
 package application;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.stream.Collectors;
 import javafx.application.Application;
@@ -27,6 +29,7 @@ public class EffortEditorConsole extends Application {
 	private static List<String> effortLogs = new ArrayList<>();
 	private static final String Lfile = "logs.txt";
     private static ComboBox<String>editor;
+    
     //here is what is run when the code displays
     //it will create the page and show it 
     public void start(Stage primaryStage) {
@@ -38,6 +41,7 @@ public class EffortEditorConsole extends Application {
     }
     //this will display the gui for the effortlogger
     static Pane createEffortLogEditorContent() {
+    	
     	//start by reinitializing what is needed
         effortLogs= new ArrayList<>();
         //this is called to read the line for the log.txt file one by one 
@@ -98,6 +102,9 @@ public class EffortEditorConsole extends Application {
         ComboBox<String> effortlogbox =new ComboBox<>();
         cyclestep.getItems().addAll("Verifying", "Information Gathering", "Information Understanding","Planning");
         effortlogbox.getItems().addAll("Interuptions", "Deliverables", "Plans","Defects", "Others");
+        
+        editor.setOnShowing(event -> refreshComboBoxItems());
+        
         //set a button to update the entry
         Button modifyingButton = new Button("Update Entry");
         modifyingButton.setDisable(true); //set as true so when you complete the options it will allow you to update 
@@ -106,16 +113,29 @@ public class EffortEditorConsole extends Application {
           modifyingButton.setDisable(newValue== null);
    
         });
+       
         //this will make the functionality for the button that will modify the the information inside the logs 
         modifyingButton.setOnAction(w->{
         	//get the exact variables the user wants to change
+        	//call the exact log
+        	 String project = editor.getSelectionModel().getSelectedItem();
         	 String cycle1= cyclestep.getSelectionModel().getSelectedItem();
         	 String sttime1= sttime.getText();
              String sptime1 =sptime.getText();
              String effort1= effortlogbox.getSelectionModel().getSelectedItem();
              //call the combobox for the exact selection of the logs and update the log based off of that
             int choice = editor.getSelectionModel().getSelectedIndex();
-            updateLogEntry(choice, sptime1, sttime1, cycle1, effort1);
+            String defect = "None"; 
+            if (project != null) {
+                String[] parts = project.split(", ");
+                for (String part : parts) {
+                    if (part.startsWith("Defect:")) {
+                        defect = part.substring("Defect:".length()).trim();
+                        break; // Stop after finding the defect
+                    }
+                }
+            }
+            updateLogEntry(choice, sptime1, sttime1, cycle1, effort1, defect);
         });
         //add the placement for the modifying button, the cycles, the effort logs
         gridPane.add(modifyingButton, 3, 5);
@@ -178,15 +198,23 @@ public class EffortEditorConsole extends Application {
             editor.requestLayout(); // refresh
         });
     }
+    private static void refreshComboBoxItems() {
+        Platform.runLater(() -> {
+            try {
+                List<String> logEntries = Files.readAllLines(Paths.get(Lfile));
+                editor.getItems().setAll(logEntries);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
 //updating certain log parts and info 
-    private static void updateLogEntry(int userChoice, String stop, String start, String lifecycle1, String effort1) {
-    	//if the userchoice is less than the size of the effortlogs 
-        if (userChoice >= 0  && userChoice < effortLogs.size()) {
-        	
+    private static void updateLogEntry(int userChoice, String stop, String start, String lifecycle1, String effort1, String defect) {
+        if (userChoice >= 0 && userChoice < effortLogs.size()) {
             String last = effortLogs.get(userChoice);
-            //split based on the commas
             String[] logparts = last.split(", ");
+
             //if a user does select info to change update it 
             if (lifecycle1 != null && !lifecycle1.isEmpty()) {
                 logparts[1] = "Step: " + lifecycle1;
@@ -202,18 +230,22 @@ public class EffortEditorConsole extends Application {
             if (stop != null && !stop.isEmpty()) {
                 logparts[5] = "Stop Time: " + stop;
             }
+            if (defect != null && !defect.isEmpty()) {
+                logparts[7] = "Defect: " + defect;
+            }
             //if the duration has been changed, you must calculate it and givr the time
             if (start != null && !start.isEmpty() && stop != null && !stop.isEmpty()) {
                 String finalTime = durationSolver(stop, start);
                 logparts[6] = "Duration: " + finalTime;
             }
             //put it back together and insert it 
+
             String usersEntry = String.join(", ", logparts);
             effortLogs.set(userChoice, usersEntry);
             //update the selection system and the restoration
             inputEffort();
-            restorecombo();
-            Platform.runLater(() -> editor.getItems().set(userChoice, usersEntry)); //use the platform run 
+            restorecombo(); // Refresh the combo box
+            Platform.runLater(() -> editor.getItems().set(userChoice, usersEntry));
         }
     }
 
@@ -241,21 +273,17 @@ public class EffortEditorConsole extends Application {
     			}
     	}
     public static void loadeffortLogs() {
-    	//using the same try and catch to read the file
-    	try (BufferedReader view = new BufferedReader(new FileReader(Lfile))) {
-    	//create the string that will view and upload
-        String line;
-        //if it is null then it wont read but if it has contents the readLine method will view them
-        while ((line=view.readLine())!=null) {
-        	//then it adds to the array
-            effortLogs.add(line);
-        }
-    } 
-    	catch (IOException e) {
-    	//this will catch the exceptions that might be thrown
-        e.printStackTrace();
+        effortLogs.clear();
+        try (BufferedReader view = new BufferedReader(new FileReader(Lfile))) {
+            String line;
+            while ((line = view.readLine()) != null) {
+                effortLogs.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
     private static void deleteOrClearLog(){
     	final int notdelete = -1;
     	//the log selected by the combo box will be deleted
@@ -318,4 +346,15 @@ public class EffortEditorConsole extends Application {
         
         return formation;
     }
+    //refresh effortlogs combobox 
+    public static void refreshEffortLogsComboBox() {
+        // Load the logs from file again
+        loadeffortLogs(); // Load the logs in
+        Platform.runLater(() -> {
+            editor.getItems().clear(); // Clear the current items
+            editor.getItems().addAll(effortLogs); // Add the new items
+        });
+    }
+
+
 }
