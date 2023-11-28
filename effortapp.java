@@ -802,14 +802,7 @@ public class effortapp extends Application {
 
       return defectConsoleContent;
   }
-  public class LogEntryFormated extends HBox {
-	    public LogEntryFormated(String logEntry) {
-	        super();
-	        // Add your formatting logic here
-	        Label logLabel = new Label(logEntry);
-	        this.getChildren().add(logLabel);
-	    }
-	}
+  
 
   public static void main(String[] args) {
       launch(args);
