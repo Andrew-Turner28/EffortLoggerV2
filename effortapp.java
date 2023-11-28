@@ -47,8 +47,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 public class effortapp extends Application {
-//	most of the variables are self explanatory
 	
+//	most of the variables are self explanatory
    private LocalDateTime startTime;
    private LocalDateTime stopTime;
    private Duration duration;
@@ -101,7 +101,7 @@ public class effortapp extends Application {
        Tab newLogTab = new Tab ("Log-New");
        newLogTab = new Tab("Log-New", createNewLogDisplayContent());
        newLogTab.setClosable(false);
-       loadLogEntries(); // loadLogEntries is called after createLogDisplayContent
+       //loadLogEntries(); // loadLogEntries is called after createLogDisplayContent
        Tab effortLoggerTab = new Tab("EffortConsole", createEffortLoggerContent());
        effortLoggerTab.setClosable(false);
        
@@ -109,7 +109,7 @@ public class effortapp extends Application {
 	    Tab defectConsoleTab = new Tab("DefectConsole", createDefectConsoleContent());
 	    defectConsoleTab.setClosable(false);
 	    loadLogEntriesFromFile();
-	    
+	   
        //AbdallaIntegration
        PlanningPokerApp planningPokerApp = new PlanningPokerApp();
        Tab planningPokerTab = planningPokerApp.createPlanningPokerTab();
@@ -117,7 +117,7 @@ public class effortapp extends Application {
        
        //Sulieman Integration
        //ADDED BY SULEIMAN 
-       loadLogEntries();
+       //loadLogEntries();
        EffortEditorConsole effortLogEditor = new  EffortEditorConsole();
        Tab effortLogEditorTab = new Tab("Effort Log Editor", effortLogEditor.createEffortLogEditorContent());
        effortLogEditorTab.setClosable(false);
@@ -789,4 +789,3 @@ public class effortapp extends Application {
       launch(args);
   }
 }
-
