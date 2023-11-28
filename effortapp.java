@@ -275,13 +275,20 @@ public class effortapp extends Application {
 	      try (BufferedReader reader = new BufferedReader(new FileReader(LOG_FILE_PATH))) {
 	          String line;
 	          while ((line = reader.readLine()) != null) {
+	        	  
+	        	  
 	              logEntries.add(line);
 	              logDisplay.appendText(line + "\n");
+	              
+	             
 	              projectListDropdown.getItems().addAll(line);
+	            
 	          }
+	          
 	      } catch (IOException e) {
 	          e.printStackTrace(); // Handle the exception according to your needs
 	      }
+	      EffortEditorConsole.refreshEffortLogsComboBox();
 	  }
   
   private BorderPane createEffortLoggerContent() {
@@ -354,7 +361,7 @@ public class effortapp extends Application {
   private void handleUpdateDefectAction() {
   	String selectedProject = projectListDropdown.getValue();
       String defectToUpdate = defectName.getText();
-
+     
       if (selectedProject != null && !selectedProject.isEmpty() && defectToUpdate != null && !defectToUpdate.isEmpty()) {
           for (int i = logEntries.size() - 1; i >= 0; i--) {
               String logEntry = logEntries.get(i);
@@ -380,8 +387,9 @@ public class effortapp extends Application {
           }
       }
       
-      
       EffortEditorConsole.refreshEffortLogsComboBox();
+      
+      
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
           for (String entry : logEntries) {
               writer.write(entry + "\n");
@@ -391,15 +399,21 @@ public class effortapp extends Application {
       }
   }
   
+  
+  
   private void updateProjectListDropdown() {
   	projectListDropdown.getItems().clear();
+  	
       // Update the project list dropdown with the complete log entries for each project
       for (String entry : logEntries) {
+    	  
           if (!projectListDropdown.getItems().contains(entry)) {
               projectListDropdown.getItems().add(entry);
           }
       }
   }
+  
+  
   
   private void handleDeleteDefectAction() {
   	String selectedProject = projectListDropdown.getValue();
@@ -421,6 +435,7 @@ public class effortapp extends Application {
               }
           }
       }
+      EffortEditorConsole.refreshEffortLogsComboBox();
       
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
           for (String entry : logEntries) {
@@ -430,6 +445,8 @@ public class effortapp extends Application {
           e.printStackTrace(); // Handle the exception according to your needs
       }
   }
+  
+  
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   private BorderPane createNewLogDisplayContent() {
 	  //Create borderpane for display
@@ -785,7 +802,15 @@ public class effortapp extends Application {
 
       return defectConsoleContent;
   }
-  
+  public class LogEntryFormated extends HBox {
+	    public LogEntryFormated(String logEntry) {
+	        super();
+	        // Add your formatting logic here
+	        Label logLabel = new Label(logEntry);
+	        this.getChildren().add(logLabel);
+	    }
+	}
+
   public static void main(String[] args) {
       launch(args);
   }
