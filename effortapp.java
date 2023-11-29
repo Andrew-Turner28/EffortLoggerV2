@@ -109,6 +109,17 @@ public class effortapp extends Application {
 	    Tab defectConsoleTab = new Tab("DefectConsole", createDefectConsoleContent());
 	    defectConsoleTab.setClosable(false);
 	    loadLogEntriesFromFile();
+
+	 defectConsoleTab.setOnSelectionChanged(event -> {
+	        if (defectConsoleTab.isSelected()) {
+	        	refreshdefect();
+	        }
+	    });
+	    logDisplayTab.setOnSelectionChanged(event -> {
+	        if (logDisplayTab.isSelected()) {
+	        	renewLogtextdisplay();
+	        }
+	    });
 	   
        //AbdallaIntegration
        PlanningPokerApp planningPokerApp = new PlanningPokerApp();
@@ -790,10 +801,36 @@ public class effortapp extends Application {
 	    });
 	}
 	
-	
-	
-	
-  
+	//these two method will refresh the defect combobox
+	private void refreshdefect() {
+		//clear the project list dropdown items
+		projectListDropdown.getItems().clear();
+	    try (BufferedReader defectReader = new BufferedReader(new FileReader(LOG_FILE_PATH))) {
+	    	//read throguh the line and parse looking for specific Logs
+	        String line;
+	        //while the line is read and isnt empty and the information to the dropdown
+	        while ((line = defectReader.readLine()) != null) {
+	    
+	            
+	            projectListDropdown.getItems().add(line);
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
+	//this will ensure that the log display area always refreshes within the code when someone clicks on it 
+	private void renewLogtextdisplay() {
+		//clear the log display then read the file and append each line of the text 
+	    logDisplay.clear(); 
+	    try (BufferedReader logdisplayer = new BufferedReader(new FileReader(LOG_FILE_PATH))) {
+	        String line;
+	        while ((line =logdisplayer.readLine()) != null) {
+	            logDisplay.appendText(line + "\n"); // Append each line to the TextArea
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
   private BorderPane createDefectConsoleContent() {
   	// create the Defect Console tab
   	GridPane grid = new GridPane();
