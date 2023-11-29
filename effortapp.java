@@ -179,7 +179,7 @@ public class effortapp extends Application {
        startTime = LocalDateTime.now();
        timerStatus.setText("Clock is running");
       
-       timerStatus.getStyleClass().remove("label-timer-stopped");
+       timerStatus.getStyleClass().clear();
        timerStatus.getStyleClass().add("label-timer-running");
       
        if (timeline != null) {
@@ -199,6 +199,8 @@ public class effortapp extends Application {
        duration = Duration.between(startTime, stopTime);
        timerStatus.setText("Clock is stopped");
 
+       
+       timerStatus.getStyleClass().clear();
        timerStatus.getStyleClass().add("label-timer-stopped");
        
        double numDuration = 0;
