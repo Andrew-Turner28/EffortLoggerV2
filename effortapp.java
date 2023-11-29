@@ -126,6 +126,10 @@ public class effortapp extends Application {
        
        tabPane.getTabs().addAll(effortLoggerTab, effortLogEditorTab, defectConsoleTab, newLogTab, logSearchTab, planningPokerTab, logDisplayTab);
        Scene scene = new Scene(tabPane, 800, 600);
+       
+       scene.getStylesheets().add(getClass().getResource("colors.css").toExternalForm());
+
+       
        // ... rest of your existing code ...
        primaryStage.setTitle("Effort Logger App");
        primaryStage.setScene(scene);
@@ -188,6 +192,8 @@ public class effortapp extends Application {
        duration = Duration.between(startTime, stopTime);
        timerStatus.setText("Clock is stopped");
 
+       timerStatus.getStyleClass().add("label-timer-stopped");
+       
        double numDuration = 0;
        String numRegex = "[+-]?([0-9]*[.])?[0-9]+";
        String extractedNum = String.valueOf(duration).replaceAll("[^0-9.]", "");
@@ -802,7 +808,7 @@ public class effortapp extends Application {
 
       return defectConsoleContent;
   }
-  
+
 
   public static void main(String[] args) {
       launch(args);
