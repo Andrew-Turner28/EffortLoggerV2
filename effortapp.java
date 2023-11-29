@@ -77,9 +77,7 @@ public class effortapp extends Application {
    private TextField defectName;
    private Button updateDefect;
    private Button deleteDefect;
-   
-   //ADDED BY SULEIMAN
-   String currentSortChoice = "default";
+   private String currentSortChoice = "default";
 
    
    private VBox logEntriesContainer;
@@ -98,7 +96,7 @@ public class effortapp extends Application {
        Tab logSearchTab = new Tab("Search");
        logSearchTab = new Tab("Search", createLogSearchDisplayContent());
        logSearchTab.setClosable(false);
-       Tab newLogTab = new Tab ("Log-New");
+       Tab newLogTab = new Tab ("Logs");
        newLogTab = new Tab("Log-New", createNewLogDisplayContent());
        newLogTab.setClosable(false);
        //loadLogEntries(); // loadLogEntries is called after createLogDisplayContent
@@ -128,14 +126,11 @@ public class effortapp extends Application {
        
        //Sulieman Integration
        //ADDED BY SULEIMAN 
-       //loadLogEntries();
        EffortEditorConsole effortLogEditor = new  EffortEditorConsole();
        Tab effortLogEditorTab = new Tab("Effort Log Editor", effortLogEditor.createEffortLogEditorContent());
        effortLogEditorTab.setClosable(false);
-       //tabPane.getTabs().add(effortLogEditorTab);
-       //redoLog();
        
-       tabPane.getTabs().addAll(effortLoggerTab, effortLogEditorTab, defectConsoleTab, newLogTab, logSearchTab, planningPokerTab, logDisplayTab);
+       tabPane.getTabs().addAll(effortLoggerTab, effortLogEditorTab, defectConsoleTab, newLogTab, logSearchTab, planningPokerTab);
        Scene scene = new Scene(tabPane, 800, 600);
        
        scene.getStylesheets().add(getClass().getResource("colors.css").toExternalForm());
@@ -407,8 +402,7 @@ public class effortapp extends Application {
               }
           }
       }
-      
-   //   EffortEditorConsole.refreshEffortLogsComboBox();
+
       
       
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
@@ -468,7 +462,6 @@ public class effortapp extends Application {
   }
   
   
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   private BorderPane createNewLogDisplayContent() {
 	  //Create borderpane for display
 	  BorderPane newLogDisplayContent = new BorderPane();
@@ -497,15 +490,16 @@ public class effortapp extends Application {
 	  newLogDisplayContent.setCenter(scrollPane);
 	  
 	   // Initialize the clearLogsButton here
-	  	
 	  	refreshButton = new Button("Refresh");
 	    clearLogsButton = new Button("Clear Logs");
 	    
+	    //Set up re-fresh button
 	    refreshButton.setOnAction(event -> {
 		    logEntiresContainer.getChildren().clear();
 		    loadLogEntires(logEntiresContainer, LOG_FILE_PATH);
 	    });
 	    
+	    //Set up clear log button
 	    clearLogsButton.setOnAction(event -> {
 		    clearLogs();
 		    logEntiresContainer.getChildren().clear();
@@ -518,7 +512,7 @@ public class effortapp extends Application {
 	    dropdown.getItems().addAll("Default", "Ascending", "Descending");
 	    dropdown.setValue("Default");
 	    
-	    
+	    //gives dropdown functionality
 	    dropdown.setOnAction(event -> {
 	        String sortChoice = dropdown.getValue();
 	        // Call updateLogDisplay with the selected sort choice and the VBox container
@@ -530,7 +524,7 @@ public class effortapp extends Application {
 	        updateLogDisplay(sortChoice, logEntiresContainer);
 	    });
 
-	    
+	    //Adds to HBox containers to add to top of the Pane
 	    HBox sortControls = new HBox(5, refreshButton, clearLogsButton, dropdown);
 	    sortControls.setAlignment(Pos.CENTER_LEFT);
 	    HBox topLayout = new HBox(5, newLogDisplayLabel, sortControls);
@@ -538,8 +532,6 @@ public class effortapp extends Application {
 	    
 	    newLogDisplayContent.setTop(topLayout);
 	    
-
-	  
 	  return newLogDisplayContent;
   }
  private void updateLogDisplay(String sortChoice, VBox logEntriesContainer) {
