@@ -20,6 +20,7 @@ public class PlanningPokerApp extends Application {
         launch(args);
     }
 
+    //javaFX method
     @Override
     public void start(Stage primaryStage) {
         TabPane tabPane = new TabPane();
@@ -33,6 +34,8 @@ public class PlanningPokerApp extends Application {
         primaryStage.show();
     }
 
+    //The physical layout for PlanningPoker in the form of a Tab
+    //This is the function that exports the planning poker functionality
     public Tab createPlanningPokerTab() {
         Tab tab = new Tab("Planning Poker");
         GridPane gridPane = new GridPane();
@@ -70,20 +73,20 @@ public class PlanningPokerApp extends Application {
 
         averageScoreLabel = new Label();
         gridPane.add(averageScoreLabel, 1, 3);
-
+        //initializes users and sets up according fields
         startSessionButton.setOnAction(event -> {
             int numberOfUsers = Integer.parseInt(usersTextField.getText());
             initializeUsers(numberOfUsers);
             tableView.setItems(users);
         });
-
+        //sets vote for the selected member
         voteButton.setOnAction(event -> {
             User selectedUser = tableView.getSelectionModel().getSelectedItem();
             if (selectedUser != null) {
                 selectedUser.setVote(voteComboBox.getValue());
             }
         });
-
+        //refreshes the voting system
         nextRoundButton.setOnAction(event -> {
             if (checkSimilarVotes()) {
                 // If the votes are similar, end the voting process or take appropriate action.
@@ -93,7 +96,7 @@ public class PlanningPokerApp extends Application {
                 System.out.println("Next round...");
             }
         });
-
+        //displays the rounds score
         endRoundButton.setOnAction(event -> {
             int averageScore = calculateAverageScore();
             averageScoreLabel.setText("Average Score: " + averageScore);
@@ -102,14 +105,14 @@ public class PlanningPokerApp extends Application {
         tab.setContent(gridPane);
         return tab;
     }
-
+    //intializes number of users
     private void initializeUsers(int numberOfUsers) {
         users.clear();
         for (int i = 1; i <= numberOfUsers; i++) {
             users.add(new User("User " + i));
         }
     }
-
+    //checks for a trend
     private boolean checkSimilarVotes() {
         int referenceVote = users.get(0).getVote();
         for (User user : users) {
@@ -120,6 +123,8 @@ public class PlanningPokerApp extends Application {
         return true;
     }
 
+    //returns average score, Admin decides whther to stop session
+    //or continue
     private int calculateAverageScore() {
         int totalScore = 0;
         for (User user : users) {
@@ -128,6 +133,10 @@ public class PlanningPokerApp extends Application {
         return Math.round((float) totalScore / users.size());
     }
 
+    //Internal class user
+    //represents the member of each Planning Poker round
+    //Each user has a vote which is in the planning poker range of
+    // 1,3,5,7,9,13 and their name, although this property isnt used
     public static class User {
         private final SimpleStringProperty userName;
         private final SimpleIntegerProperty vote;
