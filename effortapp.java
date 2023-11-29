@@ -850,12 +850,8 @@ public class effortapp extends Application {
       return defectConsoleContent;
   }
   
- 
 
-  public static void main(String[] args) {
-      launch(args);
-  }
-}
+
   public static void main(String[] args) {
       launch(args);
   }
