@@ -27,7 +27,7 @@ import java.util.List;
 public class EffortEditorConsole extends Application {
 	//these declare the combobox, effortlogs(as an array)and the file that we will edit, save or delete from 
 	private static List<String> effortLogs = new ArrayList<>();
-	private static final String Lfile = "logs.txt";
+	 private static final String Lfile = "logs.txt";
     private static ComboBox<String>editor;
     
     //here is what is run when the code displays
@@ -209,11 +209,11 @@ public class EffortEditorConsole extends Application {
         });
     }
 
-//updating certain log parts and info 
+    //updating certain log parts and info 
     private static void updateLogEntry(int userChoice, String stop, String start, String lifecycle1, String effort1, String defect) {
         if (userChoice >= 0 && userChoice < effortLogs.size()) {
-            String last = effortLogs.get(userChoice);
-            String[] logparts = last.split(", ");
+            String logs = effortLogs.get(userChoice);
+            String[] logparts = logs.split(", ");
 
             //if a user does select info to change update it 
             if (lifecycle1 != null && !lifecycle1.isEmpty()) {
