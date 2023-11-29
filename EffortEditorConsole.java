@@ -22,7 +22,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import java.util.List;
 
-//Created by Suleiman Bashir
+
 //This is the class used to edit log elements that have already been created.
 public class EffortEditorConsole extends Application {
 	
