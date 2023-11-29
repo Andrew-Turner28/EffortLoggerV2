@@ -537,113 +537,116 @@ public class effortapp extends Application {
 	    
 	  return newLogDisplayContent;
   }
+  
+  //this method will update the logdisplay given sortchoice that is available in the logs tab
  private void updateLogDisplay(String sortChoice, VBox logEntriesContainer) {
-	  //use the switchchoice and make it either descending or ascending 
+	  // if the user selects descending it will call false and ascending will be true inside the projectdurationsorter class
 	    switch (sortChoice) {
 	        case "Descending":
-	        	//call the sortway to be true or false
+	        	//call sortway
 	            sortway(false, logEntriesContainer);
 	            break;
 	        case "Ascending":
+	        	//call sortway
 	            sortway(true, logEntriesContainer);
 	            break;
 	        default:
-	        	//default order will use the logentriescontainer 
+	        	//default will just call the default method
 	            defaultorder(logEntriesContainer);
 	            break;
 	    }
   }
+ 
+ 
   private void defaultorder(VBox logEntriesContainer) {
-	  //if it is the currentsortchoice
+	  //if the currentsortchoice was selected at default 
 	    currentSortChoice = "Default";
-	    //if it is not null 
 	    if (logEntriesContainer != null) {
-	    	//it will clear up 
+	    	//clear the log entries and then display them from the text file again
 	    	logEntriesContainer.getChildren().clear();
-	    	//it loads the log entries
 		    loadLogEntires(logEntriesContainer,LOG_FILE_PATH);
 	    }
 	}
 
+  
 	private void sortway(boolean ascending, VBox logEntriesContainer) {
-		//this will sort it if it is ascending or descending
+		//if sortway is called it will be used in either ascending or descending 
+		//by using the storted string to get the list of items and collect them
 	    currentSortChoice = ascending ? "Ascending" : "Descending";
-	    //call the sorted 
 	    List<String> sorted = getLogEntries().stream()
 	        .sorted(getresult(ascending))
 	        .collect(Collectors.toList());
-	    //this vbox logentriescontainer
+	    //this clear the vbox and format it the way it should
 	    logEntriesContainer.getChildren().clear();
-	    //this sorts the log for each and adds it 
 	    sorted.forEach(log -> logEntriesContainer.getChildren().add(new LogEntryFormated(log)));
 	}
-	//comparator will check the result of the ascending
+	
+	//when this method is used, it will check the ascending descending
 	private Comparator<String> getresult(boolean ascending) {
-		// it will get the result of the first and second string
+		
+		//there could be only two options for the duration
 	    return(one,two) -> {
 	        String first = one.substring(one.lastIndexOf(", Duration: ") + ", Duration: ".length());
 	        String second = two.substring(two.lastIndexOf(", Duration: ") + ", Duration: ".length());
-	        //return the ascending 
+	        //return the ascending and compare it to seconds
 	        return ascending ? first.compareTo(second) : second.compareTo(first);
 	    };
 	}
-  // getlogentries as a list  
-  private List<String> getLogEntries() {
-	  //try to read all the files 
+	
+  // this method will read the log entries 
+  private List<String> getLogEntries() { 
 	    try {
-	    	//return it then rank
+	    	//return all the files in logs.txt
 	        return Files.readAllLines(Paths.get(LOG_FILE_PATH));
-	        //catch the io exception
 	    } catch (IOException e) {
-	        e.printStackTrace(); // printstacktrace 
-	        return new ArrayList<>(); // if there is an arraylist it will return 
+	        e.printStackTrace(); 
+	        //if there is an error it will return the array list
+	        return new ArrayList<>(); 
 	    }
 	}
+  
+  //this method will clear the logs and print null
 	private void clearLogFile1() {
+		
 	    try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_PATH))) {
-	        writer.print(""); // Clears the content of the file
+	    	//write nothing in the file and erase
+	        writer.print(""); 
 	    } catch (IOException e) {
-	        e.printStackTrace(); //    printstacktrace 
+	        e.printStackTrace(); 
 	    }
 	}
-		//redolog by givign the boolean as true
-		private void redoLog1() {
-		    Timer timer = new Timer(true); 
-		    timer.scheduleAtFixedRate(new TimerTask() {
-		        @Override
-		        public void run() {
-		        	//constantly run the refresh that uses permanently refresh through runLater on platform
-		        	 permanentlyRefresh();
+		
+	//constantly refresh the logs in the background
+	private void redoLog1() {
+		Timer timer = new Timer(true); 
+		timer.scheduleAtFixedRate(new TimerTask() {
+			public void run() {
+				//use the permanently refresh method
+				permanentlyRefresh();
 		        }
 		    }, 0, 2000); 
 		}
-
-		public static void staticreload1() {
-		  //call the runlater platform to go throguh the permanently refresh method
-		    Platform.runLater(() -> {
-		       
-		        new effortapp(). permanentlyRefresh();
-		    });
+	//refresh the effort app class and start from a new variable
+	public static void staticreload1() {
+		Platform.runLater(() -> {
+			new effortapp(). permanentlyRefresh();
+			});
 		}
-
-	
-  
-  private void loadLogEntires(VBox container, String logFilePath) {
-	  	//sets up file access
+	private void loadLogEntires(VBox container, String logFilePath) {
+	  	//this logfile will be declared as the logs.txt file
 	    File logFile = new File(logFilePath);
-	    //checks for access to file
+	    //if the file exits it will load the file in and read it line by line
 	    if (logFile.exists()) {
-	        try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
+	        try (BufferedReader load = new BufferedReader(new FileReader(logFile))) {
 	            String line;
 	            //runs through entire file 
-	            while ((line = reader.readLine()) != null) {
+	            while ((line = load.readLine()) != null) {
 	            	//Creates new object
 	            	LogEntryFormated logEntryFormatted = new LogEntryFormated(line);
-	            	//adds to VBox
+	            	//adds to the vbox for the new display
 	                container.getChildren().add(logEntryFormatted);
 	            }
 	        } catch (IOException e) {
-	        	//helps track issues
 	            e.printStackTrace();
 	        }
 	    }
@@ -690,10 +693,9 @@ public class effortapp extends Application {
  
   
   private void loadSearchedLines(VBox container, String selectedTag) {
-	    container.getChildren().clear(); // Clear previous results
-
+	    container.getChildren().clear(); // Clear the container of the vbox
 	    try {
-	        // Filter and process for a matched line, based upon the end of the line
+	        //write the file lines and use the selected tag
 	        Files.lines(Paths.get(LOG_FILE_PATH)).filter(line -> line.endsWith(selectedTag)).forEach(line -> {
 	        		//Creates object for new entry
 	            	 LogEntryFormated entry = new LogEntryFormated(line);
@@ -702,19 +704,17 @@ public class effortapp extends Application {
 	             });
 	    } catch (IOException e) {
 	        e.printStackTrace();
-	        // Handle error, e.g., show an error message
 	    }
 	}
   
-  
-  
-
   private void loadLogEntries() {
+	  //while the log file exists
       File logFile = new File(LOG_FILE_PATH);
       if (logFile.exists()) {
-          try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
+    	  //try loading and adding the parsed lines into the logdisplay and log entries
+          try (BufferedReader load = new BufferedReader(new FileReader(logFile))) {
               String line;
-              while ((line = reader.readLine()) != null) {
+              while ((line = load.readLine()) != null) {
                   logEntries.add(line);
                   logDisplay.appendText(line + "\n");
               }
@@ -724,7 +724,9 @@ public class effortapp extends Application {
       }
   }
  
+  //this will save to the new log entries
   private void saveLogEntry(String logEntry) {
+	  //print out the entries from the file path 
       try (PrintWriter out = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
           out.println(logEntry);
       } catch (IOException e) {
@@ -732,55 +734,40 @@ public class effortapp extends Application {
       }
   }
  
+  //add the new entries
   private void addTheLogEntry(String logEntry) {
       logEntries.add(logEntry);
       logDisplay.appendText(logEntry + "\n");
-      // Save the log entry to the file
+      // call it to the savelogentry method
       saveLogEntry(logEntry);
   }
  
   private void clearLogs() {
-      logEntries.clear(); // Clear the in-memory log list
-      logDisplay.clear(); // Clear the TextArea
-      clearLogFile1(); // Clear the logs.txt file
+	  //clear both the array list and the text field 
+      logEntries.clear();
+      logDisplay.clear(); 
+     // call to clear the file
+      clearLogFile1(); 
   }
-  // This method clears the logs.txt file
-  private void clearLogFile() {
-      try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_PATH))) {
-          writer.print(""); // Clears the content of the file
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
-  }
-  private void redoLog() {
-	    Timer timer = new Timer(true); //give the timer and set the boolean to true
-	    timer.scheduleAtFixedRate(new TimerTask() {
-	        @Override
-	        public void run() {
-	        	//constantly run the refresh that uses permanently refresh through runLater on platform
-	        	 permanentlyRefresh();
-	        }
-	    }, 0, 2000); //this will
-	}
 
 	public static void staticreload() {
-	  //call the runlater platform to go throguh the permanently refresh method
+	  //call the run later platform to go through the permanently refresh method
 	    Platform.runLater(() -> {
 	       
 	        new effortapp(). permanentlyRefresh();
 	    });
 	}
-	//permanently refresh using run later
+	
+	//permanently refresh the logs and the choices of the sort
 	private void permanentlyRefresh() {
 	  Platform.runLater(() -> {
-		  //constarnly clear the display and the log entries
+		 //clear the arraylist and the text field display
 	        logEntries.clear();
 	        logDisplay.clear();
-	        //call a new list of streings to get the log entries and upload as files
 	        List<String>logfiles= getLogEntries();
 	        logEntries.addAll (logfiles);
-	        // using the switch case
-	        //make them either ascending or descending or default
+	        //add the files and make them sort between ascending descending default 
+	        //from within the vbox
 	        switch (currentSortChoice) {
             case "Descending":
                 sortway(false, logEntriesContainer);
@@ -789,43 +776,42 @@ public class effortapp extends Application {
                 sortway(true, logEntriesContainer);
                 break;
             default:
-            	
                 defaultorder(logEntriesContainer);
                 break;
 	        }
 	    });
 	}
 	
-	//these two method will refresh the defect combobox
+	//refresh the combobox of the defect console
 	private void refreshdefect() {
-		//clear the project list dropdown items
+		//clear the project items
 		projectListDropdown.getItems().clear();
 	    try (BufferedReader defectReader = new BufferedReader(new FileReader(LOG_FILE_PATH))) {
-	    	//read throguh the line and parse looking for specific Logs
+	    	//read through the file and while it is not null, upload the current list
 	        String line;
-	        //while the line is read and isnt empty and the information to the dropdown
 	        while ((line = defectReader.readLine()) != null) {
-	    
-	            
 	            projectListDropdown.getItems().add(line);
 	        }
 	    } catch (IOException e) {
 	        e.printStackTrace();
 	    }
 	}
-	//this will ensure that the log display area always refreshes within the code when someone clicks on it 
+	
+	//this will ensure that the log display always constantly updates
 	private void renewLogtextdisplay() {
-		//clear the log display then read the file and append each line of the text 
+		//clear the text field
 	    logDisplay.clear(); 
 	    try (BufferedReader logdisplayer = new BufferedReader(new FileReader(LOG_FILE_PATH))) {
 	        String line;
+	        //read through the line and while it is not null append each line 
 	        while ((line =logdisplayer.readLine()) != null) {
-	            logDisplay.appendText(line + "\n"); // Append each line to the TextArea
+	            logDisplay.appendText(line + "\n"); 
 	        }
 	    } catch (IOException e) {
 	        e.printStackTrace();
 	    }
 	}
+	
   private BorderPane createDefectConsoleContent() {
   	// create the Defect Console tab
   	GridPane grid = new GridPane();
@@ -844,10 +830,7 @@ public class effortapp extends Application {
 
       return defectConsoleContent;
   }
-  
- 
-
-
   public static void main(String[] args) {
       launch(args);
   }
+}
