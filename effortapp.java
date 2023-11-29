@@ -46,6 +46,7 @@ import javafx.event.EventHandler;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
 public class effortapp extends Application {
 	
 //	most of the variables and classes are self explanatory
@@ -73,7 +74,7 @@ public class effortapp extends Application {
    private Button clearLogsButton;
    private Button refreshButton;
    private ComboBox<String> tagDropdownSearch = new ComboBox<>();
-   private ComboBox<String> projectListDropdown;
+   private ComboBox<String> projectListDropdown; // This dropdown in DefectConsole lets user access any project logged
    private TextField defectName;
    private Button updateDefect;
    private Button deleteDefect;
@@ -103,7 +104,7 @@ public class effortapp extends Application {
        Tab effortLoggerTab = new Tab("EffortConsole", createEffortLoggerContent());
        effortLoggerTab.setClosable(false);
        
-	    // Add the new "DefectConsole" tab
+	    // Adding the DefectConsole tab
 	    Tab defectConsoleTab = new Tab("DefectConsole", createDefectConsoleContent());
 	    defectConsoleTab.setClosable(false);
 	    loadLogEntriesFromFile();
@@ -135,8 +136,6 @@ public class effortapp extends Application {
        
        scene.getStylesheets().add(getClass().getResource("colors.css").toExternalForm());
 
-       
-       // ... rest of your existing code ...
        primaryStage.setTitle("Effort Logger App");
        primaryStage.setScene(scene);
        primaryStage.show();
@@ -175,7 +174,7 @@ public class effortapp extends Application {
       
    }
   
-   //handles the start action when pressed
+   //handles the start button action when pressed
    private void handleStartAction() {
        startTime = LocalDateTime.now();
        timerStatus.setText("Clock is running");
@@ -191,7 +190,7 @@ public class effortapp extends Application {
        timeline.play();
    }
 
-   //handles the stop action when pressed
+   //handles the stop button action when pressed
    private void handleStopAction() {
        stopTime = LocalDateTime.now();
        if (timeline != null) {
@@ -211,7 +210,8 @@ public class effortapp extends Application {
        } else {
            System.out.print("Error. Please try again!");
        }
-
+       
+       // adding duration of each kind of project to respective arrays
        if (projectDropdown.getValue().equals("Business Project")) {
            totalBusinessTime.add(numDuration);
        } else {
@@ -222,7 +222,8 @@ public class effortapp extends Application {
        double sumD = 0;
        double avgB = 0;
        double avgD = 0;
-
+       
+       // calculating averages for both kinds of projects
        if (totalBusinessTime == null || totalBusinessTime.isEmpty()) {
            avgB = 0;
        } else {
@@ -240,7 +241,8 @@ public class effortapp extends Application {
            }
            avgD = sumD / totalDevelopmentalTime.size();
        }
-
+       
+       // displaying average time with accuracy of two digit milliseconds
        avgBusinessTimeLabel.setText(String.format("%.2f", avgB) + " seconds");
        avgDevelopmentalTimeLabel.setText(String.format("%.2f", avgD) + " seconds");
 
@@ -260,7 +262,7 @@ public class effortapp extends Application {
       clockDisplay.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
   }
   
-  // this is how a long entry is created
+  // this is how a log entry is created
   private String createTheLogEntry() {
 	    String project = projectDropdown.getValue() != null ? projectDropdown.getValue() : "None";
 	    String lifeCycleStep = lifeCycleStepDropdown.getValue() != null ? lifeCycleStepDropdown.getValue() : "None";
@@ -286,7 +288,7 @@ public class effortapp extends Application {
 	    return String.format("Project: %s, Step: %s, Category: %s, Deliverable: %s, %s, Defect: %s, %s",
 	                         project, lifeCycleStep, effortCategory, deliverable, timeInfo, defect, projectTag);
 	}
- 
+  	//	displaying information stored in logs file on the Logs tab
 	  private void loadLogEntriesFromFile() {
 	      try (BufferedReader reader = new BufferedReader(new FileReader(LOG_FILE_PATH))) {
 	          String line;
@@ -302,7 +304,7 @@ public class effortapp extends Application {
 	          }
 	          
 	      } catch (IOException e) {
-	          e.printStackTrace(); // Handle the exception according to your needs
+	          e.printStackTrace(); // Handling the exception just in case
 	      }
 	  
 	  }
@@ -374,10 +376,11 @@ public class effortapp extends Application {
 	    return logDisplayContent;
 	}
   
+  // this code ensures the defect is updated correctly when Update Defect button is pressed
   private void handleUpdateDefectAction() {
   	String selectedProject = projectListDropdown.getValue();
       String defectToUpdate = defectName.getText();
-     
+     // checking if a project is selected or not and the defect name is empty or not
       if (selectedProject != null && !selectedProject.isEmpty() && defectToUpdate != null && !defectToUpdate.isEmpty()) {
           for (int i = logEntries.size() - 1; i >= 0; i--) {
               String logEntry = logEntries.get(i);
@@ -404,13 +407,13 @@ public class effortapp extends Application {
       }
 
       
-      
+      // updating the logs file accordingly
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
           for (String entry : logEntries) {
               writer.write(entry + "\n");
           }
       } catch (IOException e) {
-          e.printStackTrace(); // Handle the exception according to your needs
+          e.printStackTrace(); // Handling the exception just in case
       }
   }
   
@@ -419,7 +422,7 @@ public class effortapp extends Application {
   private void updateProjectListDropdown() {
   	projectListDropdown.getItems().clear();
   	
-      // Update the project list dropdown with the complete log entries for each project
+      // Update the project list dropdown in DefectConsole tab with the complete log entries for each project
       for (String entry : logEntries) {
     	  
           if (!projectListDropdown.getItems().contains(entry)) {
@@ -429,10 +432,10 @@ public class effortapp extends Application {
   }
   
   
-  
+  // this code ensures that the current defect is deleted correctly when Delete Defect button is pressed
   private void handleDeleteDefectAction() {
   	String selectedProject = projectListDropdown.getValue();
-
+  	// checking if the user selected a project or not
       if (selectedProject != null && !selectedProject.isEmpty()) {
           for (int i = logEntries.size() - 1; i >= 0; i--) {
               String logEntry = logEntries.get(i);
@@ -450,14 +453,14 @@ public class effortapp extends Application {
               }
           }
       }
-     // EffortEditorConsole.refreshEffortLogsComboBox();
-      
+     
+      // updating the logs file accordingly
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
           for (String entry : logEntries) {
               writer.write(entry + "\n");
           }
       } catch (IOException e) {
-          e.printStackTrace(); // Handle the exception according to your needs
+          e.printStackTrace(); // Handling the exception just in case
       }
   }
   
@@ -848,4 +851,3 @@ public class effortapp extends Application {
   public static void main(String[] args) {
       launch(args);
   }
-}
