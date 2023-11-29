@@ -309,7 +309,7 @@ public class effortapp extends Application {
 	      } catch (IOException e) {
 	          e.printStackTrace(); // Handle the exception according to your needs
 	      }
-	      EffortEditorConsole.refreshEffortLogsComboBox();
+	  
 	  }
   
   private BorderPane createEffortLoggerContent() {
@@ -408,7 +408,7 @@ public class effortapp extends Application {
           }
       }
       
-      EffortEditorConsole.refreshEffortLogsComboBox();
+   //   EffortEditorConsole.refreshEffortLogsComboBox();
       
       
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
@@ -456,7 +456,7 @@ public class effortapp extends Application {
               }
           }
       }
-      EffortEditorConsole.refreshEffortLogsComboBox();
+     // EffortEditorConsole.refreshEffortLogsComboBox();
       
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
           for (String entry : logEntries) {
@@ -850,6 +850,7 @@ public class effortapp extends Application {
       return defectConsoleContent;
   }
   
+ 
 
 
   public static void main(String[] args) {
