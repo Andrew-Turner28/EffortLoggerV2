@@ -48,7 +48,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 public class effortapp extends Application {
 	
-//	most of the variables are self explanatory
+//	most of the variables and classes are self explanatory
    private LocalDateTime startTime;
    private LocalDateTime stopTime;
    private Duration duration;
@@ -137,7 +137,7 @@ public class effortapp extends Application {
    }
   
   
-  
+//  This is where the components will be initialized
    private void initializeTheComponents() {
    	
        startButton = new Button("Start");
@@ -169,6 +169,7 @@ public class effortapp extends Application {
       
    }
   
+   //handles the start action when pressed
    private void handleStartAction() {
        startTime = LocalDateTime.now();
        timerStatus.setText("Clock is running");
@@ -183,7 +184,8 @@ public class effortapp extends Application {
        timeline.setCycleCount(Animation.INDEFINITE);
        timeline.play();
    }
-  
+
+   //handles the stop action when pressed
    private void handleStopAction() {
        stopTime = LocalDateTime.now();
        if (timeline != null) {
@@ -243,6 +245,7 @@ public class effortapp extends Application {
        addTheLogEntry(logEntry);
    }
  
+   // this updates the timer
   private void updateTheTimer() {
       Duration timeRunning = Duration.between(startTime, LocalDateTime.now());
       long hours = timeRunning.toHours();
@@ -251,6 +254,7 @@ public class effortapp extends Application {
       clockDisplay.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
   }
   
+  // this is how a long entry is created
   private String createTheLogEntry() {
 	    String project = projectDropdown.getValue() != null ? projectDropdown.getValue() : "None";
 	    String lifeCycleStep = lifeCycleStepDropdown.getValue() != null ? lifeCycleStepDropdown.getValue() : "None";
