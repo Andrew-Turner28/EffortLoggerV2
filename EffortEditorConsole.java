@@ -25,6 +25,7 @@ import java.util.Optional;
 
 
 //This is the class used to edit log elements that have already been created.
+//it works with effortapp
 
 public class EffortEditorConsole extends Application {
 	
