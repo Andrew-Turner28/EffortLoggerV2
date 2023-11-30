@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import java.util.List;
+import java.util.Optional;
 
 
 //This is the class used to edit log elements that have already been created.
+
 public class EffortEditorConsole extends Application {
 	
 	
@@ -58,7 +60,11 @@ public class EffortEditorConsole extends Application {
         gridPane.add(effortLogcombo, 0, 1, 2, 1);
         effortLogcombo.getSelectionModel().selectedItemProperty().addListener((mbs ,previous,latest) -> {uploadEntry(latest); });
         Button clearLogButton = new Button("Clear This Effort Log");
-        clearLogButton.setOnAction(w -> deleteOrClearLog());
+        //set the button to have an action to clear the log and enter the choice 
+        clearLogButton.setOnAction(w -> {
+            int choice = editor.getSelectionModel().getSelectedIndex();
+            deleteOrClearLog(choice); 
+        });
         gridPane.add(new Label(" Clear Effort Log."), 2, 0, 2, 1);
         gridPane.add(clearLogButton, 2, 1, 2, 1);
         editor = new ComboBox<>();
@@ -105,7 +111,8 @@ public class EffortEditorConsole extends Application {
                     }
                 }
             }
-            updateLogEntry(choice, sptime1, sttime1, cycle1, effort1, defect);
+            updateLogEntries(choice, sptime1, sttime1, cycle1, effort1, defect);
+           
         });
         //add the labels and buttons needed to modify more elements inside the logs
         gridPane.add(modifyingButton, 3, 5);
@@ -113,19 +120,28 @@ public class EffortEditorConsole extends Application {
         gridPane.add(cyclestep, 1, 6, 3, 1); 
         gridPane.add(new Label("Effort Category:"),0,7);
         gridPane.add(effortlogbox, 1, 7, 2, 1); 
+        
         //Declare and call the methods to split, delete or clear the log(s) selected
         Button deleteSelection = new Button("Delete the entry");
-        deleteSelection.setOnAction(w -> deleteOrClearLog());
+        //it will refresh and clear the logs 
+        deleteSelection.setOnAction(w -> {
+            int choice = editor.getSelectionModel().getSelectedIndex();
+            deleteOrClearLog(choice); 
+        });
+        
         gridPane.add(new Label("Delete the chosen log"), 0,9,2,1);
         gridPane.add(deleteSelection, 0, 10, 2, 1);
         Button splitButton = new Button("Split into two entries");
         gridPane.add(new Label("Split the entry"), 0, 11);
         gridPane.add(splitButton, 0, 12);
         splitButton.setOnAction(w -> {
+        	
         	//call choice to be the exact log the user wants from the editor combo box drop down
             int choice = editor.getSelectionModel().getSelectedIndex();
             //call the exact choice into the split method 
-            duplicateEntry(choice);
+           
+            
+            split(choice);
         });
         //create new borderpane and return it so it can be used as a tab on effort console. 
         BorderPane borderPane = new BorderPane();
@@ -170,43 +186,40 @@ public class EffortEditorConsole extends Application {
         });
     }
 
-    //this method updates the logs based on what the user has entered
-    private static void updateLogEntry(int userChoice, String stop, String start, String lifecycle1, String effort1, String defect) {
-    	reloadlogsanddisplayeditor();
-        if (userChoice >= 0 && userChoice < effortLogs.size()) {
-            String logs = effortLogs.get(userChoice);
-            String[] logparts = logs.split(", ");
-            //if the selected null variables are not null it will piece together new variables 
-            if (lifecycle1 != null && !lifecycle1.isEmpty()) {
-                logparts[1] = "Step: " + lifecycle1;
+    //this method will update the log and and the entry elements
+    private static void updateLogEntries(int selection, String stoptime, String starttime, String lifecycle1, String effort1, String defect) {
+        try {
+            //this will put the entry into the arraylist from the file
+            List<String> lentry = Files.readAllLines(Paths.get(Lfile));
+            //update the specific log editions 
+            if (selection >= 0 &&selection<lentry.size()) {
+                String[] lparts = lentry.get(selection).split(", ");
+                //parse the strings into the specific parts you want
+                lparts[1] = "Step: " + Optional.ofNullable(lifecycle1).orElse(lparts[1].substring(6));
+                lparts[2] = "Category: " + Optional.ofNullable(effort1).orElse(lparts[2].substring(10));
+                lparts[4] = "Start Time: " + (starttime != null ? starttime :lparts[4].substring("Start Time: ".length()));
+                lparts[5] = "Stop Time: " + (stoptime != null ? stoptime :lparts[5].substring("Stop Time: ".length()));
+                lparts[7] = "Defect: " + Optional.ofNullable(defect).orElse(lparts[7].substring("Defect: ".length()));
+                //right here this will make the start and stop for the duration calculated again
+                if (starttime!= null && stoptime!= null) {
+                    String finalTime = durationSolver(stoptime, starttime);
+                    lparts[6] = "Duration: " + finalTime;
+                }
+                //set the User selection and join them together
+                lentry.set(selection, String.join(", ",lparts));
             }
-            if (effort1 != null && !effort1.isEmpty()) {
-                logparts[2] = "Category: " + effort1;
+            //update and read the file again
+            try (BufferedWriter reader = new BufferedWriter(new FileWriter(Lfile, false))) {
+                for (String logEntry:lentry) {
+                    reader.write(logEntry);
+                    reader.newLine();
+                }
             }
-            if (start != null && !start.isEmpty()) {
-                logparts[4] = "Start Time: " + start;
-            }
-            
-            if (stop != null && !stop.isEmpty()) {
-                logparts[5] = "Stop Time: " + stop;
-            }
-            if (defect != null && !defect.isEmpty()) {
-                logparts[7] = "Defect: " + defect;
-            }
-            
-            //then the duration will be recalculated
-            if (start != null && !start.isEmpty() && stop != null && !stop.isEmpty()) {
-                String finalTime = durationSolver(stop, start);
-                logparts[6] = "Duration: " + finalTime;
-            }
-            //join the elements together and constantly update the logs file
-            String usersEntry = String.join(", ", logparts);
-            effortLogs.set(userChoice, usersEntry);
-            inputEffort();
-            restorecombo(); 
-            Platform.runLater(() -> editor.getItems().set(userChoice, usersEntry));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
 
     //because the logs file is constantly updating the combo box for the editor should be aswell
     private static void restorecombo() {
@@ -217,21 +230,17 @@ public class EffortEditorConsole extends Application {
             editor.getItems().setAll(effortLogs);
         });
     }
-    
-    //this is for the combo box to parse and read through individual logs before editing them
-    public static void inputEffort(){
-    	try (BufferedWriter analyze =new BufferedWriter (new FileWriter(Lfile ,false))){
-    		//read line by line and write the new line in order to display it 
-    		for (String swriterStr :effortLogs) {
-    			analyze.write(swriterStr);
-    			analyze.newLine();
-    			}
-    		//catch the problem if there are any errors
-    		}catch(IOException w){
-    			w.printStackTrace();
-    			}
-    	}
-    
+    public static void inputEffort() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Lfile, false))) { // false to overwrite
+            for (String logEntry : effortLogs) {
+                writer.write(logEntry);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     //after it parses, it has to recognize each text line and parse it 
     public static void loadeffortLogs() {
         effortLogs.clear();
@@ -246,51 +255,80 @@ public class EffortEditorConsole extends Application {
         }
     }
     
-    //this method will delete or clear the log in the effort log editor
-    private static void deleteOrClearLog(){
-    	
-    	final int notdelete = -1;
-    	//as long as it is not -1 the log file will remove the combo box selection
-    	int deleteLog = editor.getSelectionModel().getSelectedIndex();
-        if (deleteLog != notdelete) {
-            effortLogs.remove(deleteLog);
-            //read the lines and update the combo again
-            inputEffort();
-            restorecombo();
+    //this method will be called by the delete and clear logs button
+    private static void deleteOrClearLog(int userChoice) {
+    	try {
+            // declare the array list thats going to be used and check the user selection
+            List<String> lEntries = Files.readAllLines(Paths.get(Lfile));
+            if (userChoice >= 0 && userChoice <  lEntries.size()) {
+            	 lEntries.remove(userChoice);
+            }
+            //this will read the lines and update the textfile 
+            try (BufferedWriter read =new BufferedWriter(new FileWriter(Lfile, false))) {
+                for (String lEntry : lEntries) {
+                    read.write(lEntry);
+                    read.newLine();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        reloadlogsanddisplayeditor();
+     }
+    
+
+    private static void split( int selection) {
+        try {
+            //this will split the lentries and read them together
+            List<String> lEntries = Files.readAllLines(Paths.get(Lfile));
+            //if the user selection qualifies 
+            if (selection < lEntries.size()  && selection >= 0 ) {
+                String selectedLog =lEntries.get(selection);
+                //push the specific entry in
+                lEntries.add(selectedLog);
+            }
+            //try to read the file and write line by line 
+            try (BufferedWriter read = new BufferedWriter(new FileWriter(Lfile, false))) {
+                for (String lEntry :lEntries) {
+                    read.write(lEntry);
+                    read.newLine();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    
+    //these two methods are going to be used as failsafe incase the duplicates do not work as expected
+    
+    private static void splitintotwoentries(int c) {
+    	//if the checking is greater or equal than 0, it will work and the log will be called
+        if (c >= 0 && c <effortLogs.size()) {
+            String chosenlog=effortLogs.get(c);
+            //Failsafe is called
+            failsafe(chosenlog);
+        }
     }
     
-    //this will split the specific log from the logs.txt file
-    public static void splitLog( int check  ) {
-    	String exactLog;
-    	//if the log does exist it will add it to the combo box so it will appear
-    	if ( check <effortLogs.size()&&check>=0) {
-    		exactLog=effortLogs.get(check);
-    		effortLogs.add(exactLog);
-    		//make sure to read the effort log again
-    		inputEffort(); 
-    		Platform.runLater(() -> {editor.getItems().add(exactLog);});		 
-    		}
-    	reloadlogsanddisplayeditor();
+    //this method will not allow accidental duplicates to occur
+    private static void failsafe(String templog) {
+    	//set up the boolean used as false 
+        boolean w;
+        w = false;
+        //while the entry is in effortlogs and it is the string
+        for (String existingEntry : effortLogs) {
+            if (existingEntry.equals(templog)) {
+                w = true;
+                break;
+            }
+        }
+        //if it is not w then it will just automatically log it 
+        if (!w) {
+            effortLogs.add(templog);
+            inputEffort(); // Save the updated logs
+        }
     }
-    
-    //this is the method that is used to split the log selected into two logs
-    private static void duplicateEntry(int checking) {
-    	String effortLogCheck;
-    	// if the log exists then it will get the specific input from the combo box
-    	//then add it again then read using the inputEffort method
-        if (checking<effortLogs.size()) {
-            effortLogCheck=effortLogs.get(checking);
-            effortLogs.add(effortLogCheck);
-            inputEffort();
-            Platform.runLater(() -> editor.getItems().add(effortLogCheck));
-        }else if (effortLogs == null) {
-        	System.out.println("I'm sorry, there are no logs to split. Try again. ");
-        } 
-        
-    }
-    
+
     //duration Solver will be called to recalculate the time if it has been changed 
     private static String durationSolver(String start1, String stop1) {
         DateTimeFormatter desiredInput = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -337,7 +375,4 @@ public class EffortEditorConsole extends Application {
             }
         });
     }
-
-
-
 }
