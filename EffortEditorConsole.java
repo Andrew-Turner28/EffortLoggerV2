@@ -172,6 +172,7 @@ public class EffortEditorConsole extends Application {
 
     //this method updates the logs based on what the user has entered
     private static void updateLogEntry(int userChoice, String stop, String start, String lifecycle1, String effort1, String defect) {
+    	reloadlogsanddisplayeditor();
         if (userChoice >= 0 && userChoice < effortLogs.size()) {
             String logs = effortLogs.get(userChoice);
             String[] logparts = logs.split(", ");
@@ -179,7 +180,6 @@ public class EffortEditorConsole extends Application {
             if (lifecycle1 != null && !lifecycle1.isEmpty()) {
                 logparts[1] = "Step: " + lifecycle1;
             }
-            
             if (effort1 != null && !effort1.isEmpty()) {
                 logparts[2] = "Category: " + effort1;
             }
@@ -193,6 +193,7 @@ public class EffortEditorConsole extends Application {
             if (defect != null && !defect.isEmpty()) {
                 logparts[7] = "Defect: " + defect;
             }
+            
             //then the duration will be recalculated
             if (start != null && !start.isEmpty() && stop != null && !stop.isEmpty()) {
                 String finalTime = durationSolver(stop, start);
@@ -207,7 +208,7 @@ public class EffortEditorConsole extends Application {
         }
     }
 
-   //because the logs file is constantly updating the combo box for the editor should be aswell
+    //because the logs file is constantly updating the combo box for the editor should be aswell
     private static void restorecombo() {
         Platform.runLater(() -> {
             effortLogs.clear();
@@ -247,6 +248,7 @@ public class EffortEditorConsole extends Application {
     
     //this method will delete or clear the log in the effort log editor
     private static void deleteOrClearLog(){
+    	
     	final int notdelete = -1;
     	//as long as it is not -1 the log file will remove the combo box selection
     	int deleteLog = editor.getSelectionModel().getSelectedIndex();
@@ -256,6 +258,7 @@ public class EffortEditorConsole extends Application {
             inputEffort();
             restorecombo();
         }
+        reloadlogsanddisplayeditor();
     }
     
     //this will split the specific log from the logs.txt file
@@ -269,6 +272,7 @@ public class EffortEditorConsole extends Application {
     		inputEffort(); 
     		Platform.runLater(() -> {editor.getItems().add(exactLog);});		 
     		}
+    	reloadlogsanddisplayeditor();
     }
     
     //this is the method that is used to split the log selected into two logs
@@ -284,6 +288,7 @@ public class EffortEditorConsole extends Application {
         }else if (effortLogs == null) {
         	System.out.println("I'm sorry, there are no logs to split. Try again. ");
         } 
+        
     }
     
     //duration Solver will be called to recalculate the time if it has been changed 
@@ -315,6 +320,24 @@ public class EffortEditorConsole extends Application {
             editor.getItems().addAll(effortLogs);
         });
     }
+ 
+    public static void reloadlogsanddisplayeditor() {
+        Platform.runLater(() -> {
+            try {
+               //clear the class
+                editor.getItems().clear();
+                // read the entries from the file
+                List<String> newLogEntries = Files.readAllLines(Paths.get(Lfile));
+                // Update the entries and clear then add
+                effortLogs.clear();
+                effortLogs.addAll(newLogEntries);
+                editor.getItems().addAll(effortLogs);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 
 
 }
