@@ -187,7 +187,7 @@ public class EffortEditorConsole extends Application {
     }
 
     //this method will update the log and and the entry elements
-    private static void updateLogEntries(int selection, String stoptime, String starttime, String lifecycle1, String effort1, String defect) {
+    static void updateLogEntries(int selection, String stoptime, String starttime, String lifecycle1, String effort1, String defect) {
         try {
             //this will put the entry into the arraylist from the file
             List<String> lentry = Files.readAllLines(Paths.get(Lfile));
@@ -282,9 +282,9 @@ public class EffortEditorConsole extends Application {
             List<String> lEntries = Files.readAllLines(Paths.get(Lfile));
             //if the user selection qualifies 
             if (selection < lEntries.size()  && selection >= 0 ) {
-                String selectedLog =lEntries.get(selection);
+                String selected =lEntries.get(selection);
                 //push the specific entry in
-                lEntries.add(selectedLog);
+                lEntries.add(selected);
             }
             //try to read the file and write line by line 
             try (BufferedWriter read = new BufferedWriter(new FileWriter(Lfile, false))) {
