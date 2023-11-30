@@ -1,9 +1,5 @@
-/*
-Abdalla
- This is the backend for the ChangeRoles Button
- CHanges the file directly
- */
-//Abdalla
+package application;
+
 import java.io.*;
 import java.util.*;
 
@@ -85,6 +81,4 @@ public class ChangeRoles {
 	    ChangeRoles c = new ChangeRoles();
 	    c.changeRole("a");
 	}
-	
-
 }
