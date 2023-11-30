@@ -1,4 +1,5 @@
 /* colors.css */
+
 .label-timer-running {
     -fx-background-color: green;
     -fx-text-fill: white;
@@ -11,4 +12,10 @@
     -fx-text-fill: white;
     -fx-padding: 10px;
     -fx-font-weight: bold;
+}
+.root {
+    -fx-background-color: rgb(210, 216, 216); 
+}
+.tab-pane {
+    -fx-background-color: rgb(210, 216, 216);
 }
