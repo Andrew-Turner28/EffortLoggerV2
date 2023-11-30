@@ -179,7 +179,7 @@ public class effortapp extends Application {
        startTime = LocalDateTime.now();
        timerStatus.setText("Clock is running");
       
-       timerStatus.getStyleClass().clear();
+       timerStatus.getStyleClass().remove("label-timer-stopped");
        timerStatus.getStyleClass().add("label-timer-running");
       
        if (timeline != null) {
@@ -199,8 +199,6 @@ public class effortapp extends Application {
        duration = Duration.between(startTime, stopTime);
        timerStatus.setText("Clock is stopped");
 
-       
-       timerStatus.getStyleClass().clear();
        timerStatus.getStyleClass().add("label-timer-stopped");
        
        double numDuration = 0;
@@ -417,6 +415,7 @@ public class effortapp extends Application {
       } catch (IOException e) {
           e.printStackTrace(); // Handling the exception just in case
       }
+      saveLogEntry();
   }
   
   
@@ -431,12 +430,13 @@ public class effortapp extends Application {
               projectListDropdown.getItems().add(entry);
           }
       }
-  }
-  
+  }  
+
   
   // this code ensures that the current defect is deleted correctly when Delete Defect button is pressed
   private void handleDeleteDefectAction() {
   	String selectedProject = projectListDropdown.getValue();
+  	
   	// checking if the user selected a project or not
       if (selectedProject != null && !selectedProject.isEmpty()) {
           for (int i = logEntries.size() - 1; i >= 0; i--) {
@@ -454,7 +454,7 @@ public class effortapp extends Application {
                   break;
               }
           }
-	      EffortEditorConsole.reloadlogsanddisplayeditor();
+ 
       }
      
       // updating the logs file accordingly
@@ -462,9 +462,11 @@ public class effortapp extends Application {
           for (String entry : logEntries) {
               writer.write(entry + "\n");
           }
+       
       } catch (IOException e) {
           e.printStackTrace(); // Handling the exception just in case
       }
+      saveLogEntry();
   }
   
   
@@ -635,6 +637,7 @@ public class effortapp extends Application {
 			new effortapp(). permanentlyRefresh();
 			});
 		}
+	
 	private void loadLogEntires(VBox container, String logFilePath) {
 	  	//this logfile will be declared as the logs.txt file
 	    File logFile = new File(logFilePath);
@@ -654,6 +657,7 @@ public class effortapp extends Application {
 	        }
 	    }
 	}
+	
   private BorderPane createLogSearchDisplayContent() {
 	  //Sets up BorderPane for display
 	  	BorderPane logSearchDisplayContent = new BorderPane();
@@ -718,8 +722,9 @@ public class effortapp extends Application {
           try (BufferedReader load = new BufferedReader(new FileReader(logFile))) {
               String line;
               while ((line = load.readLine()) != null) {
-                  logEntries.add(line);
-                  logDisplay.appendText(line + "\n");
+                 logEntries.add(line);
+                 logDisplay.appendText(line + "\n");
+                  
               }
           } catch (IOException e) {
               e.printStackTrace();
@@ -728,21 +733,25 @@ public class effortapp extends Application {
   }
  
   //this will save to the new log entries
-  private void saveLogEntry(String logEntry) {
-	  //print out the entries from the file path 
-      try (PrintWriter out = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
-          out.println(logEntry);
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
-  }
+  private void saveLogEntry() {
+	    try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH, false))) { 
+	        for (String logEntry : logEntries) {
+	            writer.write(logEntry);
+	            writer.newLine();
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
+
+
  
   //add the new entries
   private void addTheLogEntry(String logEntry) {
       logEntries.add(logEntry);
-      logDisplay.appendText(logEntry + "\n");
+      //logDisplay.appendText(logEntry + "\n");
       // call it to the savelogentry method
-      saveLogEntry(logEntry);
+      saveLogEntry();
   }
  
   private void clearLogs() {
@@ -756,8 +765,8 @@ public class effortapp extends Application {
 	public static void staticreload() {
 	  //call the run later platform to go through the permanently refresh method
 	    Platform.runLater(() -> {
-	       
 	        new effortapp(). permanentlyRefresh();
+	        
 	    });
 	}
 	
@@ -814,6 +823,8 @@ public class effortapp extends Application {
 	        e.printStackTrace();
 	    }
 	}
+	//make a method to refresh the VBoxContent
+	
 	
   private BorderPane createDefectConsoleContent() {
   	// create the Defect Console tab
@@ -833,6 +844,10 @@ public class effortapp extends Application {
 
       return defectConsoleContent;
   }
+  
+ 
+
+
   public static void main(String[] args) {
       launch(args);
   }
