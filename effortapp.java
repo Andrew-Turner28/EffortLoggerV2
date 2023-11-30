@@ -454,6 +454,7 @@ public class effortapp extends Application {
                   break;
               }
           }
+	      EffortEditorConsole.reloadlogsanddisplayeditor();
       }
      
       // updating the logs file accordingly
