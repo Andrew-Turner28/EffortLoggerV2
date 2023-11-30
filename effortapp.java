@@ -112,6 +112,7 @@ public class effortapp extends Application {
 	 defectConsoleTab.setOnSelectionChanged(event -> {
 	        if (defectConsoleTab.isSelected()) {
 	        	refreshdefect();
+	        	updatedefectinfile();
 	        }
 	    });
 	    logDisplayTab.setOnSelectionChanged(event -> {
@@ -375,49 +376,45 @@ public class effortapp extends Application {
 	   
 	    return logDisplayContent;
 	}
-  
   private void handleUpdateDefectAction() {
-	  	String selected = projectListDropdown.getValue();
-	      String defect = defectName.getText();
-	     // this is the handleupdatedefectaction
-	      //check to see if it meets the requirements
-	      if (selected!= null && !selected.isEmpty() && defect!= null && !defect.isEmpty()) {
-	          for (int i = logEntries.size() - 1; i >= 0; i--) {
-	              String logEntry = logEntries.get(i);
-	              if (logEntry.contains(selected)) {
-	            	  //while the logEntry splits amongst commas and the defect update is not null
-	                  String[] parts = logEntry.split(", ");
-	                  for (String part : parts) {
-	                      if (part.startsWith("Defect:")) {
-	                    	  String updatedLogEntry = logEntry.replace(part, "Defect: "+defect);
-	                          logEntries.set(i, updatedLogEntry);
-	                          logDisplay.clear();
-	                          //these are factors to stop the changing of strings after they are edited
-	                    	  String stoptime = parts[5].substring("Stop Time: ".length());
-	                          String starttime = parts[4].substring("Start Time: ".length());
-	                          String lifecycle1 = parts[1].substring("Step: ".length());
-	                          String effort1 = parts[2].substring("Category: ".length());
-	                          //update and call the updatelogentries
-	                          EffortEditorConsole.updateLogEntries(i, stoptime, starttime,lifecycle1,effort1,defect);
-	                          break;
-	                      }
-	                  }
-	                  break;
-			      
-	              }
-	          }
-	          //clear the log then display the right entry
-	          logDisplay.clear();
-	          for (String entry : logEntries) {
-	              logDisplay.appendText(entry + "\n");
-	          }
-	          updateProjectListDropdown();
-	          saveLogEntry();
-	      }
-	      
-	      
-	      
-	  }
+	  //make the selected project get called from the dropdown and get the defect string
+	    String selectedProject = projectListDropdown.getValue();
+	    String newDefectName = defectName.getText();
+	    //when this is not null it will go through and set each value
+	    if (selectedProject != null && !selectedProject.isEmpty() && newDefectName != null && !newDefectName.isEmpty()) {
+	        for (int i = 0; i < logEntries.size(); i++) {
+	            String logEntry = logEntries.get(i);
+	            // Find the log entry that contains the selected project
+	            if (logEntry.contains(selectedProject)) {
+	                // Break the log entry into parts
+	                String[] parts = logEntry.split(", ");
+	                StringBuilder updatedEntry = new StringBuilder();
+	                boolean defectUpdated = false;
+	                //read through and append
+	                for (String part : parts) {
+	                    if (part.startsWith("Defect:") && !defectUpdated) {
+	                        updatedEntry.append("Defect: ").append(newDefectName);
+	                        defectUpdated = true;
+	                    } else {
+	                        updatedEntry.append(part);
+	                    }
+	                    updatedEntry.append(", ");
+	                }
+	                if (updatedEntry.length() > 2) {
+	                    updatedEntry.setLength(updatedEntry.length() - 2);
+	                }
+
+	                // Replace 
+	                logEntries.set(i, updatedEntry.toString());
+	                
+	                // Update the display and save to log
+	                updateLogDisplay(currentSortChoice, logEntriesContainer);
+	                saveLogEntry();
+	                break;
+	            }
+	        }
+	    }
+	}
   private void updateProjectListDropdown() {
   	projectListDropdown.getItems().clear();
   	
@@ -430,42 +427,54 @@ public class effortapp extends Application {
       }
   }  
   
-  // this code ensures that the current defect is deleted correctly when Delete Defect button is pressed
-  private void handleDeleteDefectAction() {
-  	String selectedProject = projectListDropdown.getValue();
-  	
-  	// checking if the user selected a project or not
-      if (selectedProject != null && !selectedProject.isEmpty()) {
-          for (int i = logEntries.size() - 1; i >= 0; i--) {
-              String logEntry = logEntries.get(i);
-              if (logEntry.contains(selectedProject)) {
-                  // Update the defect information to "None"
-                  String updatedLogEntry = logEntry.replaceAll("Defect: .*?(,|$)", "Defect: None$1");
-                  logEntries.set(i, updatedLogEntry);
-                  logDisplay.clear();
-                  // Update the log display with the modified log entries
-                  for (String entry : logEntries) {
-                      logDisplay.appendText(entry + "\n");
-                  }
-                  updateProjectListDropdown();
-                  break;
-              }
-          }
- 
-      }
-     
-      // updating the logs file accordingly
-      try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) {
-          for (String entry : logEntries) {
-              writer.write(entry + "\n");
-          }
-       
-      } catch (IOException e) {
-          e.printStackTrace(); // Handling the exception just in case
-      }
-      saveLogEntry();
+  //update the defect in the file
+  private void updatedefectinfile() {
+	  //first clear the log entries then read through each line and add for the defect
+	  logEntries.clear(); 
+	    try (BufferedReader defectvalue=new BufferedReader(new FileReader(LOG_FILE_PATH))) {
+	        String read;
+	        //make it read through the line value
+	        while ((read = defectvalue.readLine())!=null) {
+	            logEntries.add(read);
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
   }
   
+
+  // this code ensures that the current defect is deleted correctly when Delete Defect button is pressed
+  private void handleDeleteDefectAction() {
+	    // Refresh the log entries from the file
+	  updatedefectinfile();
+	  
+	    String selectedProject = projectListDropdown.getValue();
+	    if (selectedProject != null && !selectedProject.isEmpty()) {
+	        for (int i = logEntries.size() - 1; i >= 0; i--) {
+	            String logEntry = logEntries.get(i);
+	            if (logEntry.contains(selectedProject)) {
+	                // Update the defect information to "None"
+	                String updatedLogEntry = logEntry.replaceAll("Defect: .*?(,|$)", "Defect: None$1");
+	                logEntries.set(i, updatedLogEntry);
+
+	                // Break here if you want to update only the first matching log entry
+	                // Remove the break if you want to update all matching entries
+	                break;
+	            }
+	        }
+
+	        // Update the UI and save changes
+	        logDisplay.clear();
+	        for (String entry : logEntries) {
+	            logDisplay.appendText(entry + "\n");
+	        }
+	       
+	        updateProjectListDropdown();
+	        
+	        saveLogEntry(); // Save the updated log entries to the file
+	    }
+	}
+
   
   private BorderPane createNewLogDisplayContent() {
 	  //Create borderpane for display
@@ -729,12 +738,14 @@ public class effortapp extends Application {
       }
   }
  
-  //this will save to the new log entries
+  //this will save entries
   private void saveLogEntry() {
-	    try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) { 
+	  //read through and edit the writer and the filepath
+	    try (BufferedWriter view = new BufferedWriter(new FileWriter(LOG_FILE_PATH))) { 
 	        for (String logEntry : logEntries) {
-	            writer.write(logEntry);
-	            writer.newLine();
+	        	//add each one
+	            view.write(logEntry);
+	            view.newLine();
 	        }
 	    } catch (IOException e) {
 	        e.printStackTrace();
@@ -843,6 +854,8 @@ public class effortapp extends Application {
   }
   
  
+
+
 
 
 
